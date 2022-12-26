@@ -22,8 +22,9 @@ func main() {
 	if err := client.Schema.Create(context.Background()); err != nil {
 		log.Panicf("failed creating schema resources: %v", err)
 	}
+	updates := make(chan *tg.Update)
 
-	server := newServer(client)
+	server := newServer(client, updates)
 
 	botToken, ok := os.LookupEnv("BOT_TOKEN")
 	if !ok {
@@ -35,9 +36,23 @@ func main() {
 		log.Panic(err)
 	}
 
+	wh, _ := tg.NewWebhook("https: //meni-334119.ew.r.appspot.com/updates")
+	_, err = bot.Request(wh)
+	if err != nil {
+		log.Fatal(err)
+	}
+	info, err := bot.GetWebhookInfo()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if info.LastErrorDate != 0 {
+		log.Printf("Telegram callback failed: %s", info.LastErrorMessage)
+	}
+
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	router := app.NewApp(bot, client)
+	router := app.NewApp(bot, client, updates)
 	ctx, cancel := context.WithCancel(context.Background())
 	go router.Run(ctx)
 	defer cancel()
@@ -50,26 +65,5 @@ func main() {
 	if err := server.Run(fmt.Sprintf(":%s", port)); err != nil {
 		log.Printf(err.Error())
 	}
-
-	//http.HandleFunc("/", indexHandler)
-	//port := os.Getenv("PORT")
-	//if port == "" {
-	//	port = "8080"
-	//	log.Printf("Defaulting to port %s", port)
-	//}
-	//
-	//log.Printf("Listening on port %s", port)
-	//log.Printf("Open http://localhost:%s in the browser", port)
-	//log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
 }
 
-//func indexHandler(w http.ResponseWriter, r *http.Request) {
-//	if r.URL.Path != "/" {
-//		http.NotFound(w, r)
-//		return
-//	}
-//	_, err := fmt.Fprint(w, "Hello, World!")
-//	if err != nil {
-//		w.WriteHeader(http.StatusInternalServerError)
-//	}
-//}

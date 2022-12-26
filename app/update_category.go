@@ -35,7 +35,7 @@ func NewUpadteCategoryConversation(client *ent.Client, bot *tg.BotAPI) *UpadteCa
 	return c
 }
 
-func (c *UpadteCategoryConversation) Next(update tg.Update) {
+func (c *UpadteCategoryConversation) Next(update *tg.Update) {
 	c.node = c.node(update)
 }
 
@@ -43,7 +43,7 @@ func (c *UpadteCategoryConversation) Node() ConversationNode {
 	return c.node
 }
 
-func (c *UpadteCategoryConversation) getCategoryName(update tg.Update) ConversationNode {
+func (c *UpadteCategoryConversation) getCategoryName(update *tg.Update) ConversationNode {
 	kb, err := GetCategoryKeyboard(context.Background(), c.client, update.Message.Chat.ID)
 	if err != nil {
 		log.Println(err.Error())
@@ -64,7 +64,7 @@ func (c *UpadteCategoryConversation) getCategoryName(update tg.Update) Conversat
 	return c.getCategoryQuota
 }
 
-func (c *UpadteCategoryConversation) getCategoryQuota(update tg.Update) ConversationNode {
+func (c *UpadteCategoryConversation) getCategoryQuota(update *tg.Update) ConversationNode {
 	c.data.Name = update.Message.Text
 	msg := tg.NewMessage(update.Message.Chat.ID, "enter quota")
 	_, _ = c.bot.Send(msg)
@@ -72,7 +72,7 @@ func (c *UpadteCategoryConversation) getCategoryQuota(update tg.Update) Conversa
 	return c.end
 }
 
-func (c *UpadteCategoryConversation) end(update tg.Update) ConversationNode {
+func (c *UpadteCategoryConversation) end(update *tg.Update) ConversationNode {
 	val, err := strconv.Atoi(update.Message.Text)
 	if err != nil {
 		log.Println(err.Error())

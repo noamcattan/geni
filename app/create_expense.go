@@ -39,7 +39,7 @@ func NewCreateExpenseConversation(client *ent.Client, bot *tg.BotAPI) *CreateExp
 	return c
 }
 
-func (c *CreateExpenseConversation) Next(update tg.Update) {
+func (c *CreateExpenseConversation) Next(update *tg.Update) {
 	c.node = c.node(update)
 }
 
@@ -47,7 +47,7 @@ func (c *CreateExpenseConversation) Node() ConversationNode {
 	return c.node
 }
 
-func (c *CreateExpenseConversation) getCategoryName(update tg.Update) ConversationNode {
+func (c *CreateExpenseConversation) getCategoryName(update *tg.Update) ConversationNode {
 	kb, err := GetCategoryKeyboard(context.Background(), c.client, update.Message.Chat.ID)
 	if err != nil {
 		log.Println(err)
@@ -68,7 +68,7 @@ func (c *CreateExpenseConversation) getCategoryName(update tg.Update) Conversati
 	return c.getAmount
 }
 
-func (c *CreateExpenseConversation) getAmount(update tg.Update) ConversationNode {
+func (c *CreateExpenseConversation) getAmount(update *tg.Update) ConversationNode {
 	c.data.Category = update.Message.Text
 
 	msg := tg.NewMessage(update.Message.Chat.ID, "enter amount")
@@ -79,7 +79,7 @@ func (c *CreateExpenseConversation) getAmount(update tg.Update) ConversationNode
 	return c.getDescription
 }
 
-func (c *CreateExpenseConversation) getDescription(update tg.Update) ConversationNode {
+func (c *CreateExpenseConversation) getDescription(update *tg.Update) ConversationNode {
 	val, err := strconv.ParseFloat(update.Message.Text, 16)
 	if err != nil {
 		log.Println(err.Error())
@@ -94,7 +94,7 @@ func (c *CreateExpenseConversation) getDescription(update tg.Update) Conversatio
 	return c.end
 }
 
-func (c *CreateExpenseConversation) end(update tg.Update) ConversationNode {
+func (c *CreateExpenseConversation) end(update *tg.Update) ConversationNode {
 	c.data.Description = update.Message.Text
 
 	ctx := context.Background()

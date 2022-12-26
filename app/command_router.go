@@ -7,26 +7,26 @@ import (
 	"log"
 )
 
-type ConversationNode func(update tg.Update) ConversationNode
+type ConversationNode func(update *tg.Update) ConversationNode
 
 type Conversation interface {
-	Next(update tg.Update)
+	Next(update *tg.Update)
 	Node() ConversationNode
 }
 
 type App struct {
-	bot    *tg.BotAPI
-	client *ent.Client
-	out    chan tg.MessageConfig
+	bot     *tg.BotAPI
+	client  *ent.Client
+	updates chan *tg.Update
 
 	conversations map[int64]Conversation
 }
 
-func NewApp(bot *tg.BotAPI, client *ent.Client) *App {
+func NewApp(bot *tg.BotAPI, client *ent.Client, updates chan *tg.Update) *App {
 	return &App{
 		bot:           bot,
 		client:        client,
-		out:           make(chan tg.MessageConfig),
+		updates:       updates,
 		conversations: make(map[int64]Conversation),
 	}
 }
@@ -40,7 +40,7 @@ var commandStartKB = tg.NewReplyKeyboard(
 	tg.NewKeyboardButtonRow(tg.NewKeyboardButton("delete category")),
 )
 
-func (a *App) chooseTopic(update tg.Update) {
+func (a *App) chooseTopic(update *tg.Update) {
 	switch update.Message.Text {
 	case "report":
 		conv := NewCreateExpenseConversation(a.client, a.bot)
@@ -74,13 +74,11 @@ func (a *App) chooseTopic(update tg.Update) {
 }
 
 func (a *App) Run(ctx context.Context) {
-	u := tg.NewUpdate(0)
-	u.Timeout = 60
-	updates := a.bot.GetUpdatesChan(u)
+	//updates := a.bot.ListenForWebhook("/" + a.bot.Token)
 
 	for {
 		select {
-		case update := <-updates:
+		case update := <-a.updates:
 			chatId := update.Message.Chat.ID
 			log.Printf("new update from: %s %s. user id=%d. message=%s",
 				update.Message.Chat.FirstName,

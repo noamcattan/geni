@@ -25,7 +25,7 @@ func NewDeleteCategoryConversation(client *ent.Client, bot *tg.BotAPI) *DeleteCa
 	return c
 }
 
-func (c *DeleteCategoryConversation) Next(update tg.Update) {
+func (c *DeleteCategoryConversation) Next(update *tg.Update) {
 	c.node = c.node(update)
 }
 
@@ -33,7 +33,7 @@ func (c *DeleteCategoryConversation) Node() ConversationNode {
 	return c.node
 }
 
-func (c *DeleteCategoryConversation) getCategoryName(update tg.Update) ConversationNode {
+func (c *DeleteCategoryConversation) getCategoryName(update *tg.Update) ConversationNode {
 	kb, err := GetCategoryKeyboard(context.Background(), c.client, update.Message.Chat.ID)
 	if err != nil {
 		log.Println(err.Error())
@@ -54,7 +54,7 @@ func (c *DeleteCategoryConversation) getCategoryName(update tg.Update) Conversat
 	return c.end
 }
 
-func (c *DeleteCategoryConversation) end(update tg.Update) ConversationNode {
+func (c *DeleteCategoryConversation) end(update *tg.Update) ConversationNode {
 	name := update.Message.Text
 	ctx := context.Background()
 

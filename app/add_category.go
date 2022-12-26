@@ -35,7 +35,7 @@ func NewAddCategoryConversation(client *ent.Client, bot *tg.BotAPI) *AddCategory
 	return c
 }
 
-func (c *AddCategoryConversation) Next(update tg.Update) {
+func (c *AddCategoryConversation) Next(update *tg.Update) {
 	c.node = c.node(update)
 }
 
@@ -43,7 +43,7 @@ func (c *AddCategoryConversation) Node() ConversationNode {
 	return c.node
 }
 
-func (c *AddCategoryConversation) getCategoryName(update tg.Update) ConversationNode {
+func (c *AddCategoryConversation) getCategoryName(update *tg.Update) ConversationNode {
 	msg := tg.NewMessage(update.Message.Chat.ID, "enter name")
 	msg.ReplyMarkup = tg.NewRemoveKeyboard(true)
 	_, _ = c.bot.Send(msg)
@@ -51,7 +51,7 @@ func (c *AddCategoryConversation) getCategoryName(update tg.Update) Conversation
 	return c.getCategoryQuota
 }
 
-func (c *AddCategoryConversation) getCategoryQuota(update tg.Update) ConversationNode {
+func (c *AddCategoryConversation) getCategoryQuota(update *tg.Update) ConversationNode {
 	c.data.Name = update.Message.Text
 	msg := tg.NewMessage(update.Message.Chat.ID, "enter quota")
 	_, _ = c.bot.Send(msg)
@@ -59,7 +59,7 @@ func (c *AddCategoryConversation) getCategoryQuota(update tg.Update) Conversatio
 	return c.end
 }
 
-func (c *AddCategoryConversation) end(update tg.Update) ConversationNode {
+func (c *AddCategoryConversation) end(update *tg.Update) ConversationNode {
 	val, err := strconv.Atoi(update.Message.Text)
 	if err != nil {
 		log.Println(err.Error())

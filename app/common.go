@@ -36,5 +36,4 @@ func GetCategoryKeyboard(ctx context.Context, client *ent.Client, chatId int64) 
 	}
 
 	return kb, nil
-
 }

@@ -2,23 +2,28 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	tg "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/noamcattan/geni/ent"
 	"log"
 	"net/http"
 )
 
 type server struct {
-	client *ent.Client
+	client  *ent.Client
+	updates chan *tg.Update
+
 	*gin.Engine
 }
 
-func newServer(client *ent.Client) *server {
+func newServer(client *ent.Client, updates chan *tg.Update) *server {
 	r := gin.Default()
-	s := &server{client: client, Engine: r}
+	s := &server{client: client, updates: updates, Engine: r}
 	r.POST("/v1/account", s.createAccount)
 	r.GET("/v1/account", s.getAccounts)
 	r.POST("/v1/user", s.createUser)
 	r.GET("/v1/user", s.getUsers)
+
+	r.POST("/updates", s.updateHandler)
 	return s
 }
 
@@ -96,4 +101,15 @@ func (s *server) getUsers(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"users": users})
+}
+
+func (s *server) updateHandler(c *gin.Context) {
+	var update tg.Update
+	if err := c.ShouldBindJSON(&update); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Header("Content-Type", "application/json")
+		return
+	}
+
+	s.updates <- &update
 }
